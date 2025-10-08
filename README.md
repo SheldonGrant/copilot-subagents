@@ -1,5 +1,5 @@
 # copilot-subagents
-A preamble to the use of subagents in github copilot for vscode. This project shows how to leverage prompts and an [Github Copilot CLI](https://docs.github.com/en/copilot/concepts/agents/about-copilot-cli) to build agentic ai assistants that run in their own terminal and environments.
+A preamble to the use of subagents in github copilot for vscode. This project shows how to leverage prompts and the [Github Copilot CLI](https://docs.github.com/en/copilot/concepts/agents/about-copilot-cli) to build agentic ai assistants that run in their own terminal and environments.
 
 ```
 NOTE:
