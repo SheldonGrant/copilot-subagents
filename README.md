@@ -3,7 +3,8 @@ A preamble to the use of subagents in github copilot from vscode. This projects 
 
 ```
 NOTE:
-- This work explores the use of [Github Copilot CLI](https://docs.github.com/en/copilot/concepts/agents/about-copilot-cli)  (currently in preview) in hopes that it may serve to provide some ideas for their coming CLI subagents.
+- This work explores the use of Github Copilot CLI( currently in preview)
+- It is my hope this inspires `copilot subagents` as a CLI feature
 - This work can easily be adapted for use with ClaudeCode CLI, Gemini CLI, etc.
 ```
 
