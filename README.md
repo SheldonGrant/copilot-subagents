@@ -52,6 +52,7 @@ Here are some 💡 ideas, limitations and suggestions that i feel could be benef
 | Hardcoding copilot-instructions.md | Difficult to add context markdown files like AGENTS.md or other special cases except by hardcoding in prompts | Leverage the .github directory or a configuration for setting the instructions or important files |
 | Lack of hooks to trigger subagents on certain lifecycle events | Agents can only be executed as part of plan from main github copilot assistant | Add a configuration to trigger hooks based on 'pre-commit' style triggers |
 | Main agent only gets feedback based on terminal execution | The main agent should show progress feedback from subagents running | Use of either a new 'context' / chat history per subagent accessible from main agent or at least continue use of central file like the plan.md |
+| Fuzzy matching allowed tools / deny-tool | Currently the tools are fuzzy matched by the ai which allows flexibility between different ai CLI but means that there will be possiblity of not allowing/denying the correct tool | Implement a concrete list of tools per client that can be referenced and an set of utilities for verifying tools when agent is created or at runtime |
 
 ## 📢 Contribution and Participation
 
