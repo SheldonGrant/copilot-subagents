@@ -58,6 +58,16 @@ Here are some 💡 ideas, limitations and suggestions that i feel could be benef
 We're excited to explore this discussion further. Ultimately, let's contribute ideas back the copilot cli and other AI client CLI's like claude code and gemini.
 I've shared my thoughts here for interest as i've long wanted github copilot to add support for a CLI and for agents expecially.
 
+## Common Issues
+
+1. **Permission denied and could not request permission from user**
+   This is likely due to subagent not having permissions in the directory it is executing.
+   ✅ (Resolved) - Typically, you need to add the --add-dir and an --allow-tool for that command.
+
+2. **Plan incorrectly uses gh copilot instead of copilot**
+   The plan prompt previously asked to use copilot CLI uses the github CLI instead of the new copilot CLI.
+   ✅ (Resolved) - By updating the prompts with the correct copilot CLI usage.
+
 
 
 
