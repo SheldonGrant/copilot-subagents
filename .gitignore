@@ -1,0 +1,10 @@
+.pytest_cache
+dist
+build
+.venv
+.env
+uv.lock
+*.egg-info
+__pycache__
+sandbox
+.DS_Store

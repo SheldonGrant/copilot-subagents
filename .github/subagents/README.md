@@ -1,6 +1,6 @@
 # Subagents Directory
 
-This directory contains specialized AI subagents for the Aurora system.
+This directory contains specialized AI subagents for the aiservices system.
 
 ## Structure
 - `*.md` - Individual subagent definitions
