@@ -41,19 +41,28 @@ uv pip install -e ./src/copilot_subagents
 uv run subagents --help
 ```
 
-### B) Installing from remote GitHub URL
+### B) Installing as UV tool from remote GitHub URL
 
 For users who want to install the latest version directly from GitHub:
 
+Step 1: Install as uv tool
 ```bash
 # Install latest from main branch
-uvx --from git+https://github.com/SheldonGrant/copilot-subagents.git#subdirectory=src/copilot_subagents subagents
+uv tool install git+https://github.com/SheldonGrant/copilot-subagents.git@main#subdirectory=src/copilot_subagents
+```
 
-# Install from specific branch
-uvx --from git+https://github.com/SheldonGrant/copilot-subagents.git@first_steps#subdirectory=src/copilot_subagents subagents
+Step 2: Confirm python path is in your environment
+```
+uv tool update-shell
 
-# Install from specific tag (when available)
-uvx --from git+https://github.com/SheldonGrant/copilot-subagents.git@v1.0.0#subdirectory=src/copilot_subagents subagents
+OR
+
+export PATH="/Users/<YOUR USER>/.local/bin:$PATH" ## for mac
+```
+
+Step 3: run the command line
+```
+subagents info
 ```
 
 **Note:** The `#subdirectory=src/copilot_subagents` part is required because the CLI tool is located in a subdirectory of the repository.
