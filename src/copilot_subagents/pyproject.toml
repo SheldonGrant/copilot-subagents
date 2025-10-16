@@ -1,0 +1,42 @@
+[project]
+name = "copilot-subagents"
+version = "0.1.0"
+description = "A CLI tool for managing GitHub Copilot subagents with tool verification and execution"
+authors = [
+    {name = "Sheldon Williams", email = "sheldon.williams@example.com"},
+]
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "click>=8.0.0",
+    "rich>=13.0.0",
+    "pyyaml>=6.0.0",
+    "pathlib>=1.0.0",
+    "python-dotenv>=1.0.0",
+]
+
+# CLI entry point
+[project.scripts]
+subagents = "cli:cli"
+
+[project.optional-dependencies]
+cli = [
+    "click>=8.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/SheldonGrant/copilot-subagents"
+Repository = "https://github.com/SheldonGrant/copilot-subagents"
+
+# Development dependencies
+[tool.uv]
+dev-dependencies = [
+    "pytest>=7.0.0",
+    "black>=22.0.0",
+    "ruff>=0.1.0",
+    "mypy>=1.0.0",
+]
+
+[build-system]
+requires = ["setuptools >= 75.8.0"]
+build-backend = "setuptools.build_meta"

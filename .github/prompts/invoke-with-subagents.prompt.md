@@ -7,30 +7,28 @@ You are an Engineering Team manager. Systematically execute the planned subagent
 
 ## ‼️ RULES
 
-- ✅ All tasks must be completed by subagents using the  'copilot' CLI.
-- ✅  As a Engineering Team manager you always confirm that the planned tasks were completed as required.
-- ✅  Always call subagents with their allowed tools as defined in each subagents/*.md file.
-- ✅  As a Engineering Team manager, you may help your subagents to complete tasks that require user permissions as input. But when complete, re-execute your subagents to complete the remaining tasks. 
-- ✅  As an Engineering Team manager, you must create any directories using mkdir your team of subagents will require to complete their tasks.
-- ❌ Do not use the 'gh copilot' command line, as this is not the same as the 'copilot' CLI.
+- ✅ All tasks must be completed by subagents using the `uv run subagents invoke` CLI command.
+- ✅ As a Engineering Team manager you always confirm that the planned tasks were completed as required.
+- ✅ The subagents CLI automatically handles tool permissions and system prompts from each subagent's configuration.
+- ✅ As a Engineering Team manager, you may help your subagents to complete tasks that require user permissions as input. But when complete, re-execute your subagents to complete the remaining tasks.
+- ✅ As an Engineering Team manager, you must create any directories using mkdir your team of subagents will require to complete their tasks.
+- ❌ Do not use direct 'copilot' CLI commands - always use the subagents wrapper.
+- ❌ Do not manually process YAML frontmatter or extract tool permissions - the CLI handles this automatically.
 - ❌ You are a Engineering Team manager, you do not perform any tasks yourself
 
 ## Instructions
 
 1. **Load Execution Plan**: Read and parse `.github/subagents/state/plan.md`.
 
+2. **Review Codebase Context**: Analyze the [CONTRIBUTING.md] and [.github/copilot-instructions.md] to understand the current codebase.
 
-2. Before making changes, analyze the [CONTRIBUTING.md] and [.github/copilot-instructions.md] to understand the current codebase.
+3. **Validate Prerequisites**: Ensure all referenced subagents exist using `uv run subagents list` if needed.
 
-3. **Validate Prerequisites**: Ensure all referenced subagents exist and are properly configured.
+4. **Execute Steps Sequentially**: Run each step according to its dependencies using `uv run subagents invoke`, passing outputs as inputs to subsequent steps.
 
-4. **Execute Steps Sequentially**: Run each step according to its dependencies, passing outputs as inputs to subsequent steps.
+5. **Update Progress**: Keep the plan file updated with real-time execution status and results.
 
-5. **Extract Allowed and Denied Tools**: For each subagent, read their `allowed_tools` and `deny_tools` from the YAML frontmatter and include as `--allow-tool` and `--deny-tool` flags.
-
-6. **Update Progress**: Keep the plan file updated with real-time execution status and results.
-
-7. **Handle Issues**: Manage errors gracefully and provide clear feedback on any failures.
+6. **Handle Issues**: Manage errors gracefully and provide clear feedback on any failures.
 
 ## Execution Process
 
@@ -55,79 +53,38 @@ For each step in the workflow:
 
 1. **Check Dependencies**: Verify all prerequisite steps completed successfully
 2. **Prepare Context**: Gather input data from previous steps and external sources
-3. **Load Subagent**: Read the subagent definition from `.github/subagents/[name].md`
-4. **Extract Allowed and Denied Tools**: Parse the `allowed_tools` and `deny_tools` from the subagent's YAML frontmatter
-5. **Execute CLI Command**: Run the GitHub Copilot CLI command with proper `--allow-tool` and `--deny-tool` flags
-6. **Process Response**: Validate and extract relevant outputs from Copilot's response
-7. **Update Status**: Mark step as COMPLETED or FAILED
-8. **Store Results**: Save outputs for use by dependent steps
+3. **Execute Subagent**: Run `uv run subagents invoke [subagent-name] --prompt "[task-description]"`
+4. **Process Response**: Validate and extract relevant outputs from the subagent's response
+5. **Update Status**: Mark step as COMPLETED or FAILED
+6. **Store Results**: Save outputs for use by dependent steps
 
-### GitHub Copilot CLI Execution Process
-For each step:
+### Subagents CLI Execution Process
+For each step, use the simplified CLI command:
 
 ```bash
-# Extract subagent system prompt (remove YAML frontmatter)
-SUBAGENT_PROMPT=$(cat .github/subagents/[subagent-name].md | sed -n '/^---$/,/^---$/d; p')
+uv run subagents invoke [subagent-name] --prompt "Context: [step-specific-context-from-plan]
 
-# Extract allowed tools from YAML frontmatter
-ALLOWED_TOOLS=$(grep -A 10 "allowed_tools:" .github/subagents/[subagent-name].md | grep -E '^\s*-\s*".*"' | sed 's/.*"\(.*\)".*/--allow-tool \1/' | tr '\n' ' ')
-
-# Extract denied tools from YAML frontmatter
-DENIED_TOOLS=$(grep -A 10 "deny_tools:" .github/subagents/[subagent-name].md | grep -E '^\s*-\s*".*"' | sed 's/.*"\(.*\)".*/--deny-tool "\1"/' | tr '\n' ' ')
-
-# Combine with step-specific context and task
-FULL_PROMPT="$SUBAGENT_PROMPT
-
-Context: [step-specific-context-from-plan]
 Task: [step-specific-task-from-plan]"
-
-# Execute with GitHub Copilot CLI including allowed and denied tools
-copilot -p "$FULL_PROMPT" $ALLOWED_TOOLS $DENIED_TOOLS
 ```
 
-**Important**: Always include the `--allow-tool` flags for each tool specified in the subagent's `allowed_tools` section and `--deny-tool` flags for each tool specified in the subagent's `deny_tools` section.
+The subagents CLI automatically:
+- Loads the subagent's system prompt from `.github/subagents/[name].md`
+- Applies the correct tool permissions (allowed_tools and deny_tools)
+- Handles model compatibility and formatting
+- Provides proper error handling and validation
 
-### Allowed and Denied Tools Extraction
-To properly extract allowed and denied tools from a subagent's `.md` file:
+**Optional Flags**:
+- `--dry-run`: Preview the execution without running
+- `--model [model-name]`: Override the default model if supported
+
+### Subagent Discovery
+If you need to verify which subagents are available, use:
 
 ```bash
-# Method 1: Extract from YAML frontmatter
-# Extract allowed tools
-grep -A 10 "allowed_tools:" .github/subagents/subagent-name.md | \
-  grep -E '^\s*-\s*".*"' | \
-  sed 's/.*"\(.*\)".*/--allow-tool \1/' | \
-  tr '\n' ' '
-
-# Extract denied tools
-grep -A 10 "deny_tools:" .github/subagents/subagent-name.md | \
-  grep -E '^\s*-\s*".*"' | \
-  sed 's/.*"\(.*\)".*/--deny-tool "\1"/' | \
-  tr '\n' ' '
-
-# Method 2: Manual extraction from file
-# Look for the allowed_tools and deny_tools sections in the YAML frontmatter:
-# allowed_tools: 
-#   - "create_file"
-#   - "replace_string_in_file"
-#   - "read_file"
-# deny_tools:
-#   - "shell(git push)"
-#   - "shell(git branch)"
-# 
-# Convert to CLI flags:
-# --allow-tool create_file --allow-tool replace_string_in_file --allow-tool read_file --deny-tool "shell(git push)" --deny-tool "shell(git branch)"
+uv run subagents list
 ```
 
-**Example Tool Mappings**:
-- `vue3-liquid-glass-developer`: 
-  - Allowed: `create_file`, `replace_string_in_file`, `read_file`, `file_search`, `semantic_search`, `grep_search`, `run_in_terminal`, `install_extension`, `create_new_workspace`, `get_vscode_api`
-  - Denied: `shell(git push)`, `shell(git branch)`
-- `typescript-developer`: 
-  - Allowed: `file_write`, `code_analysis`, `type_checking`, `dependency_management`
-  - Denied: None
-- `code-reviewer`: 
-  - Allowed: `code_analysis`, `security_scan`, `performance_check`, `style_check`
-  - Denied: None
+This displays all configured subagents with their descriptions and capabilities. The CLI automatically manages all tool permissions and configuration details from each subagent's YAML frontmatter.
 
 ### Step Execution Template
 Add this to the plan file for each executed step:
@@ -135,27 +92,15 @@ Add this to the plan file for each executed step:
 ```markdown
 #### Step [N]: [Step Name] - ✅ COMPLETED
 **Subagent**: `[subagent-name]`
-**File**: `.github/subagents/[subagent-name].md`
 **Started**: [timestamp]
 **Completed**: [timestamp]  
 **Duration**: [duration]
 
 **CLI Command Executed**:
 ```bash
-copilot -p "$(cat .github/subagents/[subagent-name].md | sed -n '/^---$/,/^---$/d; p') 
+uv run subagents invoke [subagent-name] --prompt "Context: [step-specific-context]
 
-Context: [step-specific-context]
-Task: [step-specific-task]" \
---allow-tool [tool1] \
---allow-tool [tool2] \
---allow-tool [tool3] \
---deny-tool [denied-tool1] \
---deny-tool [denied-tool2]
-```
-
-**Subagent System Prompt**:
-```
-[The system prompt loaded from the .md file]
+Task: [step-specific-task]"
 ```
 
 **Context Provided**:
@@ -163,9 +108,9 @@ Task: [step-specific-task]" \
 [Input context and data provided to the subagent]
 ```
 
-**GitHub Copilot Output**:
+**Subagent Output**:
 ```
-[The complete response from gh copilot suggest command]
+[The complete response from the subagent execution]
 ```
 
 **Extracted Results**:
@@ -230,24 +175,18 @@ When a step fails:
 ## Data Flow Management
 
 ### Context Structure
-Each subagent receives context in this format:
-```markdown
-## Context for [Subagent Name]
-
-### Current Task
-[Specific task description from the plan]
-
-### Available Inputs
-[Data from previous steps or external sources]
-
-### Expected Output
-[What this step should produce]
-
-### Global Context  
-- Original Request: [user's original request]
-- Current Step: [N] of [total]
-- Previous Results: [summary of prior step outputs]
+Each subagent receives context in a simple prompt format:
 ```
+Context: [Specific context and inputs from previous steps]
+
+Task: [Specific task description from the plan]
+```
+
+The subagents CLI handles:
+- Loading the subagent's system prompt automatically
+- Applying proper tool permissions
+- Managing model compatibility
+- Error handling and validation
 
 ### Output Processing
 After each subagent execution:
@@ -260,40 +199,15 @@ After each subagent execution:
 
 Here's how a real execution would work with actual GitHub Copilot CLI commands:
 
-### Sample Subagent Definition
-First, assume we have `.github/subagents/vue3-liquid-glass-developer.md`:
-```markdown
----
-name: "vue3-liquid-glass-developer"
-description: "Vue 3 TypeScript specialist creating liquid glass responsive applications optimized for mobile"
-version: "1.0.0"
-created: "2025-10-08"
-allowed_tools: 
-  - "create_file"
-  - "replace_string_in_file"
-  - "read_file"
-  - "file_search"
-  - "semantic_search"
-  - "grep_search"
-  - "run_in_terminal"
-  - "install_extension"
-  - "create_new_workspace"
-  - "get_vscode_api"
-deny_tools:
-  - "shell(git push)"
-  - "shell(git branch)"
-tags: ["vue3", "typescript", "tailwindcss", "responsive", "mobile-first", "liquid-glass", "frontend"]
----
-You are a specialized Vue 3 TypeScript developer expert in creating modern, responsive applications with a liquid glass aesthetic. Your expertise centers on building beautiful, fluid interfaces using Vue 3 Composition API, TypeScript, and Tailwind CSS, with a mobile-first approach that scales elegantly to desktop environments.
+### Subagent Configuration Management
+The subagents CLI automatically reads and processes subagent configurations from `.github/subagents/[name].md` files. Each subagent file contains YAML frontmatter with configuration and a system prompt. The CLI handles all the complexity of:
 
-## Response
-Provide complete Vue 3 implementation with:
-- Vue 3 Composition API components
-- TypeScript interfaces and types
-- Tailwind CSS styling with liquid glass effects
-- Mobile-first responsive design
-- Proper validation and error handling
-```
+- Loading system prompts
+- Applying tool permissions (allowed_tools and deny_tools)
+- Model compatibility checks
+- Error handling and validation
+
+You simply invoke subagents by name using `uv run subagents invoke [name] --prompt "[task]"`.
 
 ## Example Execution Flow
 
@@ -317,34 +231,15 @@ Given a plan with 4 steps, the execution would update the plan file like this:
 
 #### Step 1: Frontend Component Implementation - ✅ COMPLETED
 **Subagent**: `vue3-liquid-glass-developer`
-**File**: `.github/subagents/vue3-liquid-glass-developer.md`
 **Started**: 14:45:15
 **Completed**: 14:52:30
 **Duration**: 7m 15s
 
 **CLI Command Executed**:
 ```bash
-copilot -p "You are a specialized Vue 3 TypeScript developer expert in creating modern, responsive applications with a liquid glass aesthetic. Your expertise centers on building beautiful, fluid interfaces using Vue 3 Composition API, TypeScript, and Tailwind CSS, with a mobile-first approach that scales elegantly to desktop environments.
+uv run subagents invoke vue3-liquid-glass-developer --prompt "Context: Vue3 authentication component with liquid glass design
 
-Context: Vue3 authentication component with liquid glass design
-Task: Create a Vue3 authentication form component with TypeScript, Tailwind CSS, and liquid glass aesthetic. Include login/register forms with proper validation." \
---allow-tool create_file \
---allow-tool replace_string_in_file \
---allow-tool read_file \
---allow-tool file_search \
---allow-tool semantic_search \
---allow-tool grep_search \
---allow-tool run_in_terminal \
---allow-tool install_extension \
---allow-tool create_new_workspace \
---allow-tool get_vscode_api \
---deny-tool "shell(git push)" \
---deny-tool "shell(git branch)"
-```
-
-**Subagent System Prompt**:
-```
-You are a specialized Vue 3 TypeScript developer expert in creating modern, responsive applications with a liquid glass aesthetic. Your expertise centers on building beautiful, fluid interfaces using Vue 3 Composition API, TypeScript, and Tailwind CSS, with a mobile-first approach that scales elegantly to desktop environments.
+Task: Create a Vue3 authentication form component with TypeScript, Tailwind CSS, and liquid glass aesthetic. Include login/register forms with proper validation."
 ```
 
 **Context Provided**:
@@ -353,9 +248,9 @@ Vue3 authentication component with liquid glass design
 Task: Create a Vue3 authentication form component with TypeScript, Tailwind CSS, and liquid glass aesthetic. Include login/register forms with proper validation.
 ```
 
-**GitHub Copilot Output**:
+**Subagent Output**:
 ```typescript
-// src/aurora-ai/src/services/auth-service.ts
+// src/aiservices/src/services/auth-service.ts
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { AuthConfig, User, AuthResult, TokenPayload } from '../types/auth-types.js';
@@ -396,7 +291,7 @@ export class AuthenticationService {
   }
 }
 
-// src/aurora-ai/src/types/auth-types.ts
+// src/aiservices/src/types/auth-types.ts
 export interface AuthConfig {
   jwtSecret: string;
   tokenExpiry?: string;
@@ -427,14 +322,14 @@ export interface AuthResult {
 **Extracted Results**:
 ```
 Files created:
-- src/aurora-ai/src/services/auth-service.ts: Main authentication service (89 lines)
-- src/aurora-ai/src/types/auth-types.ts: TypeScript interfaces (31 lines)
+- src/aiservices/src/services/auth-service.ts: Main authentication service (89 lines)
+- src/aiservices/src/types/auth-types.ts: TypeScript interfaces (31 lines)
 
 Key components:
 - AuthenticationService class with password hashing and JWT functionality
 - Comprehensive type definitions for authentication flow
 - Error handling and input validation
-- Integration patterns matching existing Aurora codebase structure
+- Integration patterns matching existing aiservices codebase structure
 ```
 
 #### Step 2: Generate Tests - ✅ COMPLETED

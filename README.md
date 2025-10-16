@@ -26,7 +26,9 @@ This follows a similar expectation as that in [Claude code sub-agents](https://d
 
 I wanted to show how using just what's available in Github Copilot for VsCode we could build a subagents system without writing any code. Github Copilot, with Anthropics Claude or Grok Code Fast 1 or GPT5 offer a great way to implement scripts as only markdown, where the LLM agent can call a set of commands and execute a sequence of tasks or even loops if required. 
 
-#### The subagent flow
+#### The Basic subagent flow
+
+Use command line tools + github copilots awesome 'workflow' following capabilities.
 
 1. Create your subagents 🤖 ... 🤖 
   
@@ -39,6 +41,10 @@ I wanted to show how using just what's available in Github Copilot for VsCode we
 - Use [.github/prompts/invoke-with-subagents.prompt.md] to execute the [.github/subagents/state/plan.md]
 
 4. Your main agent acts as a manager that can re-execute failed tasks.
+
+```
+NOTE: we've implemented a simple command line called 'subagents' that abstracts the calling of copilot -p CLI and adds in validation for tools, and provide list agents functionality. This has improved the reliability of calling agents, since there is no fuzziness between 'defining a subagent' and 'calling a subagent'.
+```
 
 
 ### Limitations & Suggestions
@@ -68,6 +74,10 @@ I've shared my thoughts here for interest as i've long wanted github copilot to 
 2. **Plan incorrectly uses gh copilot instead of copilot**
    The plan prompt previously asked to use copilot CLI uses the github CLI instead of the new copilot CLI.
    ✅ (Resolved) - By updating the prompts with the correct copilot CLI usage.
+
+3. **Brittle execution and failures on tools and permissions**
+   Copilot-cli has complexity due to the cli not having a tool to prompt user for 'permissions' leading to failures on task.
+   ✅ (Resolved) - Implementing of subagents cli to help validate tools and invoke agents. Additionally, setting the copilot main agent as a 'manager' which would resolve any issues after the agent is complete. The advantage of running in terminal being the copilot main agent can see what failed and resolve this.
 
 
 
